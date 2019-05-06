@@ -51,7 +51,6 @@ var data = {
 	y:y_i,
 	t:0,
 	dt:0.01,
-	//I:Array(N).fill(0),
 	C:1,
 	g_L:1,
 	g_Ca:1,
@@ -89,15 +88,7 @@ var demo = g9(data, function(data,ctx) {
 	ctx.point(0, 0, {r:100, fill:fill});
 	ctx.point(x_i + M*data.N, y_i - M*data.V, {r:15, fill:fill});
 
-	//Graph of current points
-	/*var I_disp = new Array(n)
-	for (i=0;i<=n;i=i+1){
-		I_disp[i] = I_hist[n*i]
-	}
-	var I_max = Math.max(...I_disp)
-	var I_min = Math.min(...I_disp)
-	var I_range = I_max - I_min*/
-	for (i=0;i<=N;i=i+(N/n)){
+	for (i=0;i<=N-N/n;i=i+(N/n)){
 		ctx.point(plot_x + (i/N) * plot_width, plot_y - plot_height * I_hist[i], {r:plot_width/n/10})
 	}
 
