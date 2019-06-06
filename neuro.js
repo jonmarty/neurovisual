@@ -1,7 +1,6 @@
 //Simulation
 
 //Functions
-//TODO: Find TANH and COSH functions in JS
 let M_ss = function(data){return (1/2) * (1 + Math.tanh((data.V - data.V_1) / data.V_2))}
 let N_ss = function(data){return (1/2) * (1 + Math.tanh((data.V - data.V_3) / data.V_4))}
 let T_N  = function(data){return 1 / (data.phi * Math.cosh((data.V - data.V_3) / (2 * data.V_4)))}
@@ -9,6 +8,11 @@ let T_N  = function(data){return 1 / (data.phi * Math.cosh((data.V - data.V_3) /
 //Define differential equations
 let dV = function(data, I){return (I - data.g_L * (data.V - data.V_L) - data.g_Ca * M_ss(data) * (data.V - data.V_Ca) - data.g_K * data.N * (data.V - data.V_K)) / data.C}
 let dN = function(data){return (N_ss(data) - data.N) / T_N(data)}
+
+//Equations for the input of each channel
+let L = function(data){return -data.g_L * (data.V - data.V_L)}
+let Ca = function(data){return -data.g_Ca * M_ss(data) * (data.V - data.V_Ca)}
+let K = function(data){return -data.g_K * data.N * (data.V - data.V_K)}
 
 //Update function
 let update = function(data,I){
@@ -18,28 +22,12 @@ let update = function(data,I){
 	data.x++
 }
 
-//Sample stimulus functions
-let square = function(t, start, stop, intensity){
-	if(t >= start && t <= stop){
-		return intensity
-	}
-	return 0
-}
-
-let on_off = function(t, on, off, intensity){
-	tn = t % (on+off)
-	if(tn <= on){
-		return intensity
-	}
-	return 0
-}
-
 //Graphics
 const x_i = -400;
 const y_i = -200;
 const M = 200; // Amount to multiply the voltage and recovery variable by for graphics
 const N = 1000; // Number of data points to store
-const n = 10; // Number of data points to display
+const n = 30; // Number of data points to display
 const plot_x = 400 // X value of bottom left of Current Data Plot
 const plot_y = -200 // Y value of bottom left of Current Data Plot
 const plot_width = 400 // Width of Current Data Plot
@@ -51,6 +39,10 @@ var data = {
 	y:y_i,
 	t:0,
 	dt:0.01,
+	AP_coor:0,
+	L_coor:0,
+	Ca_coor:0,
+	K_coor:0,
 	C:1,
 	g_L:1,
 	g_Ca:1,
@@ -68,37 +60,52 @@ var data = {
 }
 
 var demo = g9(data, function(data,ctx) {
-	
+
 	lineconf = {'stroke-width':1}
 
 	//Dendrites
-	ctx.line(50,60,200,215, lineconf)
+	//Lithium
 	ctx.line(50,-60,200,-215, lineconf)
-	ctx.line(50,15,200,170, lineconf)
-	ctx.line(50,15,200,15, lineconf)
-	ctx.line(50,-15,200,-15, lineconf)
 	ctx.line(50,-15,200,-170, lineconf)
+	ctx.line(200,-215,400,-215, lineconf)
+	ctx.line(200,-170,400,-170, lineconf)
+	//Calcium
+	ctx.line(50,15,400,15, lineconf)
+	ctx.line(50,-15,400,-15, lineconf)
+	//Potassium
+	ctx.line(50,60,200,215, lineconf)
+	ctx.line(50,15,200,170, lineconf)
+	ctx.line(200,215,400,215, lineconf)
+	ctx.line(200,170,400,170, lineconf)
+	//Animations
+	data.AP_coor = action_potential(data.AP_coor % 100,ctx)
+	data.L_coor = lithium_channel(data.L_coor % 100,ctx,L(data))
+	data.Ca_coor = calcium_channel(data.Ca_coor % 100,ctx,Ca(data))
+	data.K_coor = potassium_channel(data.K_coor % 100,ctx,K(data))
+
 
 	//Axon
 	ctx.line(-50,20,-400,20, lineconf)
 	ctx.line(-50,-20,-400,-20, lineconf)
-	
+
 	//Neuron
 	fill = 'rgb('+Math.abs(M*data.N)+',0,'+Math.abs(M*data.V)+')';
 	ctx.point(0, 0, {r:100, fill:fill});
 	ctx.point(x_i + M*data.N, y_i - M*data.V, {r:15, fill:fill});
 
-	for (i=0;i<=N-N/n;i=i+(N/n)){
+	for (i=0;i<=N-Math.floor(N/n);i=i+Math.floor(N/n)){
 		ctx.point(plot_x + (i/N) * plot_width, plot_y - plot_height * I_hist[i], {r:plot_width/n/10})
 	}
 
 });
 
+demo.align('center', 'center')
+		.insertInto('.demo')
+
 setInterval(function(){
 	if(!demo.isManipulating){
 		var data = demo.getData()
 		var t = data.t
-		var sin = Math.sin
 		var pi = Math.PI
 		stim_expr = document.getElementById("stim_expr").value
 		try{

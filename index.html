@@ -22,23 +22,15 @@
 
 <script type="text/javascript" src='./build/g9.js'></script>
 <script type="text/javascript" src='http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
-
-<!-- <script type="text/javascript" src='./demos/dragon.js'></script> -->
+<!--<script type="text/javascript" src='./modules/expr_range_analsis'></script>-->
+<script type="text/javascript" src='./modules/functions.js'></script>
+<script type="text/javascript" src='./modules/particles.js'></script>
 
 <script type="text/javascript">
-
-var sc = location.search.slice(1) || 'neuro'
-
-var e = eval
-
-fetch('http://localhost:1337/demos/' + sc + '.js')
-	.then(s => s.text())
-	.then(x => {
-		e(x)
-	    demo.align('center', 'center')
-    	    .insertInto('.demo')
-	})
-
+fetch('http://localhost:1337/neuro.js')
+  .then(s => s.text())
+  .then(x => eval(x))
+document.getElementById("stim_expr").value = String(sin(0))
 </script>
 
 </body>

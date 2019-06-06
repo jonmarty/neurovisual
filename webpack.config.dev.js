@@ -7,6 +7,10 @@ module.exports = {
     'webpack-hot-middleware/client',
     './src/index'
   ],
+  include: [
+    './modules/functions.js',
+    './modules/particles.js'
+  ],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'g9.js',
